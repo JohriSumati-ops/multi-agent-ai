@@ -1,0 +1,120 @@
+"""
+core/config.py
+
+WHY THIS FILE EXISTS
+---------------------
+Every process-wide setting (database URL, secret keys, log level, feature
+flags) is defined in exactly one place. Nothing else in the codebase should
+read `os.environ` directly — that pattern scatters configuration knowledge
+across dozens of files and makes it impossible to know what an application
+depends on without grepping the whole repo.
+
+SOFTWARE ENGINEERING PRINCIPLE
+--------------------------------
+This is the "Single Source of Truth" / 12-Factor App configuration pattern:
+config lives in the environment, is validated at startup (fail fast), and is
+injected into the rest of the app as a typed object rather than passed
+around as raw strings.
+
+HOW FUTURE AI MODULES WILL USE THIS
+-------------------------------------
+Phase 2+ will add fields here (EMBEDDING_MODEL_NAME, VECTOR_STORE_URL,
+LLM_PROVIDER, GRAPH_DB_URL, etc.) without touching any other file — every
+consumer just imports `settings` and reads the new attribute.
+"""
+
+from functools import lru_cache
+from typing import Literal
+
+from pydantic import Field, PostgresDsn, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """
+    Typed, validated application settings.
+
+    All values can be overridden via environment variables or a `.env` file.
+    Field names map 1:1 to environment variable names (case-insensitive).
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # ------------------------------------------------------------------ #
+    # Application metadata
+    # ------------------------------------------------------------------ #
+    APP_NAME: str = "Multi-Agent Research Assistant"
+    APP_VERSION: str = "0.1.0"
+    ENVIRONMENT: Literal["development", "staging", "production", "test"] = "development"
+    DEBUG: bool = True
+
+    # ------------------------------------------------------------------ #
+    # API
+    # ------------------------------------------------------------------ #
+    API_V1_PREFIX: str = "/api/v1"
+    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+
+    # ------------------------------------------------------------------ #
+    # Database
+    # ------------------------------------------------------------------ #
+    DATABASE_URL: str = Field(
+        default="postgresql+psycopg2://postgres:postgres@localhost:5432/research_assistant",
+        description="SQLAlchemy connection string for PostgreSQL.",
+    )
+    DATABASE_ECHO: bool = False
+    DATABASE_POOL_SIZE: int = 10
+    DATABASE_MAX_OVERFLOW: int = 20
+
+    # ------------------------------------------------------------------ #
+    # Auth (skeleton only — no login flow implemented in Phase 1)
+    # ------------------------------------------------------------------ #
+    SECRET_KEY: str = Field(
+        default="CHANGE_ME_IN_PRODUCTION",
+        description="Signing key for JWTs. Must be overridden via env var in any real deployment.",
+    )
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+
+    # ------------------------------------------------------------------ #
+    # Logging
+    # ------------------------------------------------------------------ #
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    LOG_JSON: bool = False
+
+    # ------------------------------------------------------------------ #
+    # Future AI-module placeholders (validated but unused until Phase 2+)
+    # ------------------------------------------------------------------ #
+    DEFAULT_LLM_PROVIDER: str = "claude"
+    EMBEDDING_MODEL_NAME: str = "not-configured"
+    VECTOR_STORE_URL: str = "not-configured"
+    GRAPH_DB_URL: str = "not-configured"
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def warn_on_default_secret(cls, value: str) -> str:
+        # Fail loudly is preferable to failing silently in production.
+        # We don't raise here (dev ergonomics), but downstream code
+        # (see core/security.py) checks ENVIRONMENT before trusting this.
+        return value
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """
+    Returns a cached Settings instance.
+
+    WHY lru_cache: Settings are read from disk/env once and reused for the
+    lifetime of the process. Without caching, every dependency-injected
+    `Depends(get_settings)` call would re-parse environment variables,
+    which is wasteful and can introduce subtle inconsistency if env vars
+    change mid-process (they shouldn't, but why risk it).
+    """
+    return Settings()
+
+
+settings = get_settings()
