@@ -87,6 +87,22 @@ class Settings(BaseSettings):
     LOG_JSON: bool = False
 
     # ------------------------------------------------------------------ #
+    # Document upload (Phase 2)
+    # ------------------------------------------------------------------ #
+    UPLOAD_DIR: str = Field(
+        default="./storage/uploads",
+        description="Filesystem directory where uploaded source documents are stored.",
+    )
+    MAX_UPLOAD_SIZE_MB: int = Field(
+        default=25,
+        description="Hard cap on a single uploaded file's size, enforced before it's written to disk.",
+    )
+    ALLOWED_DOCUMENT_EXTENSIONS: list[str] = Field(
+        default=["pdf", "txt", "md", "docx"],
+        description="Whitelist of file extensions accepted by the upload endpoint.",
+    )
+
+    # ------------------------------------------------------------------ #
     # Future AI-module placeholders (validated but unused until Phase 2+)
     # ------------------------------------------------------------------ #
     DEFAULT_LLM_PROVIDER: str = "claude"

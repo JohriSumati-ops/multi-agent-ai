@@ -89,3 +89,5 @@ class AgentResult(BaseModel):
 
     metadata: dict[str, Any] = Field(default_factory=dict)
     error_message: str | None = None
+    error_code: str | None = None
+    error_status_code: int | None = None

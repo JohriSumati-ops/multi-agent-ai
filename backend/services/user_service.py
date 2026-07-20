@@ -32,8 +32,8 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
-from core.exceptions import ConflictError
-from core.security import hash_password
+from core.exceptions import ConflictError, UnauthorizedError
+from core.security import hash_password, verify_password
 from models.user import User
 from repositories.learning_profile_repository import LearningProfileRepository
 from repositories.user_repository import UserRepository
@@ -72,3 +72,19 @@ class UserService:
 
     def get_user(self, user_id: str) -> User | None:
         return self.users.get(user_id)
+
+    def authenticate(self, email: str, password: str) -> User:
+        """
+        Phase 2 addition: verifies email/password for the login endpoint.
+        Uses the exact `verify_password` primitive Phase 1 built and
+        tested, just never wired to an HTTP route until now.
+        """
+        user = self.users.get_by_email(email)
+        if user is None or not verify_password(password, user.hashed_password):
+            # Deliberately identical error for "no such user" and "wrong
+            # password" — distinguishing them lets an attacker enumerate
+            # valid emails.
+            raise UnauthorizedError("Invalid email or password")
+        if not user.is_active:
+            raise UnauthorizedError("This account has been deactivated")
+        return user

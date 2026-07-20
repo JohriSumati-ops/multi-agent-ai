@@ -119,9 +119,19 @@ class BaseAgent(ABC):
             logger.exception("Agent %s failed during execution", self.name)
             context.record_step(self.name, "failed", latency_ms=elapsed_ms, error=str(exc))
 
+            # If this was one of our own domain exceptions (see
+            # core/exceptions.py), preserve its error_code/status_code so
+            # a caller reconstructing a typed exception downstream (see
+            # document_processing/pipeline.py) doesn't lose that
+            # information — only the string survives otherwise.
+            error_code = getattr(exc, "error_code", None)
+            error_status_code = getattr(exc, "status_code", None)
+
             return AgentResult(
                 agent_name=self.name,
                 success=False,
                 execution_time_ms=elapsed_ms,
                 error_message=str(exc),
+                error_code=error_code,
+                error_status_code=error_status_code,
             )

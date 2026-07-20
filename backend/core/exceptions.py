@@ -99,3 +99,32 @@ class RetrievalError(AppException):
 class LLMProviderError(AppException):
     status_code = 502
     error_code = "llm_provider_error"
+
+
+# --------------------------------------------------------------------- #
+# Phase 2 — document processing errors. All are 4xx because in every
+# case the *input* (the uploaded file) is what's at fault, not the server.
+# --------------------------------------------------------------------- #
+class UnsupportedFileTypeError(AppException):
+    status_code = 415
+    error_code = "unsupported_file_type"
+
+
+class FileTooLargeError(AppException):
+    status_code = 413
+    error_code = "file_too_large"
+
+
+class CorruptedDocumentError(AppException):
+    status_code = 422
+    error_code = "corrupted_document"
+
+
+class EmptyDocumentError(AppException):
+    status_code = 422
+    error_code = "empty_document"
+
+
+class EncryptedDocumentError(AppException):
+    status_code = 422
+    error_code = "encrypted_document"

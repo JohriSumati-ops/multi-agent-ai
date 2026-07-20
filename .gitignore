@@ -1,0 +1,20 @@
+# Virtual environments
+venv/
+.venv/
+backend/.venv/
+
+# Downloads
+Downloads/
+backend/Downloads/
+
+# Runtime uploads
+storage/uploads/
+backend/storage/uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment
+.env
+backend/.env

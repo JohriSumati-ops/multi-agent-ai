@@ -23,3 +23,13 @@ python-dotenv>=1.0
 # --- Testing ---
 pytest>=8.0
 httpx>=0.27                   # required by FastAPI's TestClient
+
+# --- Phase 2: document processing ---
+pypdf>=5.0                    # PDF text extraction
+python-docx>=1.1              # DOCX text extraction
+pysbd>=0.3                    # rule-based sentence boundary detection (classical NLP, no data download)
+langdetect>=1.0               # statistical n-gram language detection (classical NLP, no data download)
+python-multipart>=0.0.9       # required by FastAPI for multipart/form-data file uploads
+
+# --- Phase 2: test-only (used to generate sample PDFs/DOCX in the test suite) ---
+reportlab>=4.0
