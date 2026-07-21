@@ -1,20 +1,71 @@
-# Virtual environments
+# ==========================
+# Python Virtual Environments
+# ==========================
 venv/
 .venv/
+env/
+ENV/
 backend/.venv/
 
-# Downloads
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.local
+backend/.env
+
+# ==========================
+# Runtime Data
+# ==========================
 Downloads/
 backend/Downloads/
 
-# Runtime uploads
 storage/uploads/
 backend/storage/uploads/
 
-# Python
+# ==========================
+# Python Cache & Bytecode
+# ==========================
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+*.so
 
-# Environment
-.env
-backend/.env
+# ==========================
+# Testing & Coverage
+# ==========================
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ==========================
+# IDE Settings
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# Build Artifacts
+# ==========================
+build/
+dist/
+*.egg-info/
+
+# ==========================
+# Database Files
+# ==========================
+*.db
+*.sqlite3
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# Operating System Files
+# ==========================
+.DS_Store
+Thumbs.db
