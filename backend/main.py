@@ -1,7 +1,28 @@
 """
 main.py
 
-Application entry point.
+WHY THIS FILE EXISTS
+---------------------
+The single composition point where configuration, logging, middleware,
+exception handling, and routers are all wired together into one FastAPI
+`app` instance. Nothing else in the codebase should construct a FastAPI
+app — every other module either gets imported by this one or is invoked
+independently (e.g., a future Celery worker, a future CLI script).
+
+SOFTWARE ENGINEERING PRINCIPLE
+--------------------------------
+Composition Root, applied at the application level (see api/deps.py for
+the per-request version of the same idea). Keeping this file thin — it
+delegates to `core.logging`, `middleware.*`, and `api.routes.*` rather than
+defining logic inline — is what keeps the app understandable as it grows
+across future phases.
+
+HOW FUTURE AI MODULES WILL USE THIS
+-------------------------------------
+Phase 2+ routers (documents, chat, quiz, knowledge_graph, progress) get
+included here with `app.include_router(...)`, exactly like Phase 1's
+health/version routers. No other change to this file should be needed as
+the API surface grows.
 """
 
 from __future__ import annotations
@@ -10,13 +31,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
 
-import models  # noqa: F401
-from api.routes import auth, documents, health, version
+import models  # noqa: F401 — see models/__init__.py: importing this registers all ORM mappers
+from api.routes import auth, documents, health, retrieval, version
 from core.config import settings
 from core.logging import configure_logging, get_logger
-from database.init_db import init_db
 from middleware.error_handler import register_exception_handlers
 from middleware.logging_middleware import RequestLoggingMiddleware
 
@@ -26,20 +45,8 @@ logger = get_logger("app")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info(
-        "Starting %s (env=%s, debug=%s)",
-        settings.APP_NAME,
-        settings.ENVIRONMENT,
-        settings.DEBUG,
-    )
-
-    # Create database tables
-    init_db()
-
-    logger.info("Database initialized successfully.")
-
+    logger.info("Starting %s (env=%s, debug=%s)", settings.APP_NAME, settings.ENVIRONMENT, settings.DEBUG)
     yield
-
     logger.info("Shutting down %s", settings.APP_NAME)
 
 
@@ -57,60 +64,28 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
     app.add_middleware(RequestLoggingMiddleware)
 
     register_exception_handlers(app)
 
-    # Phase 1
+    # Phase 1 routes.
     app.include_router(health.router, prefix=settings.API_V1_PREFIX)
     app.include_router(version.router, prefix=settings.API_V1_PREFIX)
 
-    # Phase 2
+    # Phase 2 routes.
     app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
     app.include_router(documents.router, prefix=settings.API_V1_PREFIX)
 
-    @app.get("/", tags=["System"])
-    def root():
+    # Phase 3 routes.
+    app.include_router(retrieval.router, prefix=settings.API_V1_PREFIX)
+
+    @app.get("/", tags=["system"])
+    def root() -> dict:
         return {
             "message": f"{settings.APP_NAME} API",
             "docs": "/docs",
             "health": f"{settings.API_V1_PREFIX}/health",
         }
-
-    # -----------------------------
-    # Swagger JWT Bearer Support
-    # -----------------------------
-    def custom_openapi():
-        if app.openapi_schema:
-            return app.openapi_schema
-
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-        )
-
-        openapi_schema.setdefault("components", {})
-        openapi_schema["components"]["securitySchemes"] = {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-            }
-        }
-
-        # Protect every documents endpoint
-        for path, methods in openapi_schema["paths"].items():
-            if path.startswith("/api/v1/documents"):
-                for method in methods.values():
-                    method["security"] = [{"BearerAuth": []}]
-
-        app.openapi_schema = openapi_schema
-        return app.openapi_schema
-
-    app.openapi = custom_openapi
 
     return app
 

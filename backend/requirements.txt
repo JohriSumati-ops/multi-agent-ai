@@ -33,3 +33,8 @@ python-multipart>=0.0.9       # required by FastAPI for multipart/form-data file
 
 # --- Phase 2: test-only (used to generate sample PDFs/DOCX in the test suite) ---
 reportlab>=4.0
+
+# --- Phase 3: semantic retrieval ---
+sentence-transformers>=3.0    # local embedding inference (pulls in torch)
+faiss-cpu>=1.8                # vector index (exact search, IndexFlatIP + IndexIDMap)
+numpy>=1.26

@@ -128,3 +128,44 @@ class EmptyDocumentError(AppException):
 class EncryptedDocumentError(AppException):
     status_code = 422
     error_code = "encrypted_document"
+
+
+# --------------------------------------------------------------------- #
+# Phase 3 — embedding / vector store / retrieval errors.
+# --------------------------------------------------------------------- #
+class EmbeddingGenerationError(AppException):
+    """Raised when the embedding model fails to produce a vector for given text."""
+
+    status_code = 500
+    error_code = "embedding_generation_error"
+
+
+class InvalidEmbeddingError(AppException):
+    """Raised when a produced vector fails validation (wrong shape, NaN/Inf, wrong dtype)."""
+
+    status_code = 500
+    error_code = "invalid_embedding"
+
+
+class VectorStoreError(AppException):
+    """Raised for FAISS index operations that fail (add/remove/search)."""
+
+    status_code = 500
+    error_code = "vector_store_error"
+
+
+class IndexCorruptionError(VectorStoreError):
+    """
+    Raised when the persisted FAISS index cannot be loaded — the corrupted
+    file itself is never fatal (see retrieval/vector_store.py's recovery
+    logic); this is raised only when recovery itself is also impossible.
+    """
+
+    error_code = "index_corruption"
+
+
+class DocumentNotEmbeddableError(AppException):
+    """Raised when retrieval is requested for a document that hasn't reached CHUNKED status yet."""
+
+    status_code = 409
+    error_code = "document_not_embeddable"

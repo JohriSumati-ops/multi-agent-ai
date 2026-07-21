@@ -71,7 +71,7 @@ class Settings(BaseSettings):
     DATABASE_MAX_OVERFLOW: int = 20
 
     # ------------------------------------------------------------------ #
-    # Auth (skeleton only — no login flow implemented in Phase 1)
+    # Auth (primitives built in Phase 1; register/login routes added in Phase 2)
     # ------------------------------------------------------------------ #
     SECRET_KEY: str = Field(
         default="CHANGE_ME_IN_PRODUCTION",
@@ -103,12 +103,33 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------ #
-    # Future AI-module placeholders (validated but unused until Phase 2+)
+    # Phase 3: Semantic Retrieval Layer
     # ------------------------------------------------------------------ #
     DEFAULT_LLM_PROVIDER: str = "claude"
-    EMBEDDING_MODEL_NAME: str = "not-configured"
-    VECTOR_STORE_URL: str = "not-configured"
+    EMBEDDING_MODEL_NAME: str = Field(
+        default="all-MiniLM-L6-v2",
+        description="SentenceTransformers model name/path used by EmbeddingService.",
+    )
+    # NOTE: named VECTOR_STORE_URL for continuity with the Phase 0 architecture
+    # doc's field name — in practice this holds a local filesystem directory,
+    # since FAISS (this phase's vector store) is file-based, not a networked
+    # service. A future networked vector engine (Milvus/Qdrant) would use
+    # this same field as an actual URL with no rename needed.
+    VECTOR_STORE_URL: str = Field(
+        default="./storage/vector_store",
+        description="Directory where the FAISS index and its metadata sidecar file are persisted.",
+    )
     GRAPH_DB_URL: str = "not-configured"
+
+    EMBEDDING_BATCH_SIZE: int = Field(default=32, description="Batch size for EmbeddingService.embed_texts().")
+    EMBEDDING_CACHE_SIZE: int = Field(
+        default=10_000, description="Max entries in the in-memory embedding cache (LRU eviction)."
+    )
+    RETRIEVAL_TOP_K_DEFAULT: int = Field(default=5, description="Default number of results for semantic search.")
+    RETRIEVAL_SIMILARITY_THRESHOLD: float = Field(
+        default=0.3,
+        description="Minimum cosine similarity for a result to be included by default.",
+    )
 
     @field_validator("SECRET_KEY")
     @classmethod

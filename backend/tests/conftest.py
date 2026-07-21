@@ -30,6 +30,9 @@ from core.config import settings
 from database.base import Base
 from database.session import get_db
 from main import app
+from retrieval.embedder import EmbeddingService
+from retrieval.vector_store import reset_vector_store
+from tests.fakes import FakeEmbeddingBackend
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
@@ -44,6 +47,30 @@ def isolated_upload_dir(tmp_path, monkeypatch):
     directory would be a silent, easy-to-miss bug otherwise.
     """
     monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path / "uploads"))
+
+
+@pytest.fixture(autouse=True)
+def isolated_embedding_service(tmp_path, monkeypatch):
+    """
+    Phase 3 addition: every test gets a fresh `EmbeddingService` singleton
+    backed by `FakeEmbeddingBackend` (deterministic, no network access to
+    a model hub required — see retrieval/embedder.py and
+    docs/Phase3.md Section 19) and a fresh `FAISSVectorStore` singleton
+    pointed at a per-test temp directory, so tests never share state
+    (cached embeddings, indexed vectors) with each other or touch the
+    real `storage/vector_store/` directory.
+
+    `autouse=True` for the same reason as `isolated_upload_dir` above: this
+    kind of cross-test state leakage is exactly the class of bug that's
+    easy to introduce accidentally and hard to debug later.
+    """
+    monkeypatch.setattr(settings, "VECTOR_STORE_URL", str(tmp_path / "vector_store"))
+    EmbeddingService.reset_instance()
+    EmbeddingService.get_instance(FakeEmbeddingBackend())
+    reset_vector_store()
+    yield
+    EmbeddingService.reset_instance()
+    reset_vector_store()
 
 
 @pytest.fixture()
