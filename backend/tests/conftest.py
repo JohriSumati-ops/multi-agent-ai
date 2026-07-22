@@ -31,7 +31,8 @@ from database.base import Base
 from database.session import get_db
 from main import app
 from retrieval.embedder import EmbeddingService
-from retrieval.vector_store import reset_vector_store
+from retrieval.vector_store import reset_memory_vector_store, reset_vector_store
+from memory.session_memory import reset_session_memory
 from tests.fakes import FakeEmbeddingBackend
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -52,25 +53,32 @@ def isolated_upload_dir(tmp_path, monkeypatch):
 @pytest.fixture(autouse=True)
 def isolated_embedding_service(tmp_path, monkeypatch):
     """
-    Phase 3 addition: every test gets a fresh `EmbeddingService` singleton
-    backed by `FakeEmbeddingBackend` (deterministic, no network access to
-    a model hub required — see retrieval/embedder.py and
-    docs/Phase3.md Section 19) and a fresh `FAISSVectorStore` singleton
-    pointed at a per-test temp directory, so tests never share state
-    (cached embeddings, indexed vectors) with each other or touch the
-    real `storage/vector_store/` directory.
+    Phase 3 addition (extended in Phase 4): every test gets a fresh
+    `EmbeddingService` singleton backed by `FakeEmbeddingBackend`
+    (deterministic, no network access to a model hub required — see
+    retrieval/embedder.py and docs/Phase3.md Section 19), a fresh
+    `FAISSVectorStore` singleton for documents, AND (Phase 4) a fresh,
+    SEPARATE `FAISSVectorStore` singleton for memory, each pointed at its
+    own per-test temp directory so the two indexes can never collide on
+    disk (see docs/Phase4.md Section 11's explicit callout of this risk).
+    Also resets the Phase 4 session memory singleton for the same reason.
 
     `autouse=True` for the same reason as `isolated_upload_dir` above: this
     kind of cross-test state leakage is exactly the class of bug that's
     easy to introduce accidentally and hard to debug later.
     """
     monkeypatch.setattr(settings, "VECTOR_STORE_URL", str(tmp_path / "vector_store"))
+    monkeypatch.setattr(settings, "MEMORY_VECTOR_STORE_URL", str(tmp_path / "memory_vector_store"))
     EmbeddingService.reset_instance()
     EmbeddingService.get_instance(FakeEmbeddingBackend())
     reset_vector_store()
+    reset_memory_vector_store()
+    reset_session_memory()
     yield
     EmbeddingService.reset_instance()
     reset_vector_store()
+    reset_memory_vector_store()
+    reset_session_memory()
 
 
 @pytest.fixture()

@@ -315,3 +315,49 @@ def reset_vector_store() -> None:
     global _instance
     with _instance_lock:
         _instance = None
+
+
+# --------------------------------------------------------------------- #
+# Phase 4: a SECOND, separate singleton for the memory FAISS index.
+#
+# WHY A SEPARATE INSTANCE RATHER THAN REUSING get_vector_store() ABOVE:
+# see docs/Phase4.md Section 6, design decision #2 — searching "my past
+# conversations" and "my uploaded documents" are different retrieval
+# intents, and merging them into one index would mean they compete for the
+# same top-K slots. FAISSVectorStore itself needed zero changes to support
+# this — a second instance pointed at settings.MEMORY_VECTOR_STORE_URL
+# (a different directory from settings.VECTOR_STORE_URL) is the entire
+# implementation, which is exactly the payoff of Phase 3 already treating
+# "storage directory" as a constructor parameter rather than a hardcoded path.
+# --------------------------------------------------------------------- #
+_memory_instance: FAISSVectorStore | None = None
+_memory_instance_lock = threading.Lock()
+
+
+def get_memory_vector_store(dimension: int | None = None, embedding_model: str | None = None) -> FAISSVectorStore:
+    """Returns the process-wide memory-index singleton — see comment above."""
+    global _memory_instance
+    if _memory_instance is not None:
+        return _memory_instance
+    with _memory_instance_lock:
+        if _memory_instance is None:
+            from core.config import settings
+            from retrieval.embedder import EmbeddingService
+
+            resolved_dimension = dimension or EmbeddingService.get_instance().dimension
+            resolved_model = embedding_model or settings.EMBEDDING_MODEL_NAME
+            store = FAISSVectorStore(
+                dimension=resolved_dimension,
+                embedding_model=resolved_model,
+                storage_dir=settings.MEMORY_VECTOR_STORE_URL,
+            )
+            store.load()
+            _memory_instance = store
+    return _memory_instance
+
+
+def reset_memory_vector_store() -> None:
+    """Test-only: clears the memory-index singleton so the next call rebuilds it."""
+    global _memory_instance
+    with _memory_instance_lock:
+        _memory_instance = None

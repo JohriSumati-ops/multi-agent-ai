@@ -131,6 +131,30 @@ class Settings(BaseSettings):
         description="Minimum cosine similarity for a result to be included by default.",
     )
 
+    # ------------------------------------------------------------------ #
+    # Phase 4: Memory System
+    # ------------------------------------------------------------------ #
+    MEMORY_VECTOR_STORE_URL: str = Field(
+        default="./storage/memory_vector_store",
+        description=(
+            "Directory for the memory FAISS index — deliberately separate from "
+            "VECTOR_STORE_URL (Phase 3's document index). See docs/Phase4.md "
+            "Section 6, design decision #2."
+        ),
+    )
+    SHORT_TERM_MEMORY_TTL_DAYS: int = Field(
+        default=7, description="Default expiry window for short-term memory entries."
+    )
+    SHORT_TERM_MEMORY_MAX_ITEMS: int = Field(
+        default=50, description="Configurable size cap for short-term memory per user."
+    )
+    SESSION_MEMORY_TTL_MINUTES: int = Field(
+        default=30, description="Inactivity window after which a session's memory is reclaimed."
+    )
+    LONG_TERM_MEMORY_MAX_ITEMS: int = Field(
+        default=5_000, description="Soft cap per user before MemoryCleanupService prunes low-importance entries."
+    )
+
     @field_validator("SECRET_KEY")
     @classmethod
     def warn_on_default_secret(cls, value: str) -> str:

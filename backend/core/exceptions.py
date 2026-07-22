@@ -169,3 +169,23 @@ class DocumentNotEmbeddableError(AppException):
 
     status_code = 409
     error_code = "document_not_embeddable"
+
+
+# --------------------------------------------------------------------- #
+# Phase 4 — memory system errors.
+# --------------------------------------------------------------------- #
+class MemoryNotFoundError(AppException):
+    status_code = 404
+    error_code = "memory_not_found"
+
+
+class SessionNotFoundError(AppException):
+    status_code = 404
+    error_code = "session_not_found"
+
+
+class InvalidMemoryScopeError(AppException):
+    """Raised when a memory operation's type/scope combination is invalid (e.g., searching working memory)."""
+
+    status_code = 422
+    error_code = "invalid_memory_scope"

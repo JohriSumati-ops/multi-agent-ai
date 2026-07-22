@@ -31,7 +31,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from core.exceptions import UnauthorizedError
@@ -40,14 +40,13 @@ from database.session import get_db
 from models.user import User
 from repositories.user_repository import UserRepository
 from services.document_service import DocumentService
+from services.memory_manager import MemoryManager
 from services.semantic_search_service import SemanticSearchService
 from services.user_service import UserService
+from services.working_memory_service import WorkingMemoryService
 
 DBSession = Annotated[Session, Depends(get_db)]
-bearer_scheme = HTTPBearer(
-    bearerFormat="JWT",
-    description="Paste the JWT access token returned by /auth/login",
-)
+bearer_scheme = HTTPBearer(auto_error=True)
 
 def get_user_service(db: DBSession) -> UserService:
     return UserService(db)
@@ -70,16 +69,32 @@ def get_semantic_search_service(db: DBSession) -> SemanticSearchService:
 SemanticSearchServiceDep = Annotated[SemanticSearchService, Depends(get_semantic_search_service)]
 
 
+def get_working_memory_service() -> WorkingMemoryService:
+    """
+    Deliberately takes no `db` dependency and is constructed fresh per
+    request, per docs/Phase4.md Section 3.1 — this is what makes working
+    memory "automatically cleared" true without any explicit teardown code.
+    """
+    return WorkingMemoryService()
+
+
+WorkingMemoryServiceDep = Annotated[WorkingMemoryService, Depends(get_working_memory_service)]
+
+
+def get_memory_manager(db: DBSession, working_memory: WorkingMemoryServiceDep) -> MemoryManager:
+    return MemoryManager(db, working_memory=working_memory)
+
+
+MemoryManagerDep = Annotated[MemoryManager, Depends(get_memory_manager)]
+
+
 def get_current_user(
     db: DBSession,
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    credentials: Annotated[
+        HTTPAuthorizationCredentials,
+        Depends(bearer_scheme),
+    ],
 ) -> User:
-    """
-    Resolves the authenticated user from a JWT Bearer token.
-
-    Using HTTPBearer registers the Bearer authentication scheme in the
-    OpenAPI specification so Swagger UI displays the Authorize button.
-    """
 
     token = credentials.credentials
 
@@ -95,9 +110,8 @@ def get_current_user(
         raise UnauthorizedError("Token subject is not a valid user identifier") from exc
 
     user = UserRepository(db).get(user_id)
-
     if user is None:
-        raise UnauthorizedError("User for this token no longer exists")
+        raise UnauthorizedError("User no longer exists")
 
     return user
 
