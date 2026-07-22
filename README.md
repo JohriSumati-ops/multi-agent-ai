@@ -353,6 +353,3 @@ Focused on AI Systems, Backend Engineering, Multi-Agent Architectures, Retrieval
 
 ---
 
-## License
-
-This project is licensed under the MIT License.
