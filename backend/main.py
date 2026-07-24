@@ -32,15 +32,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import models  # noqa: F401 — importing registers all SQLAlchemy ORM models.
-from api.routes import (
-    auth,
-    documents,
-    health,
-    memory,
-    retrieval,
-    version,
-)
+import models  # noqa: F401 — see models/__init__.py: importing this registers all ORM mappers
+from api.routes import auth, documents, health, memory, orchestration, retrieval, version
 from core.config import settings
 from core.logging import configure_logging, get_logger
 from middleware.error_handler import register_exception_handlers
@@ -52,12 +45,7 @@ logger = get_logger("app")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info(
-        "Starting %s (env=%s, debug=%s)",
-        settings.APP_NAME,
-        settings.ENVIRONMENT,
-        settings.DEBUG,
-    )
+    logger.info("Starting %s (env=%s, debug=%s)", settings.APP_NAME, settings.ENVIRONMENT, settings.DEBUG)
     yield
     logger.info("Shutting down %s", settings.APP_NAME)
 
@@ -76,32 +64,26 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
     app.add_middleware(RequestLoggingMiddleware)
 
     register_exception_handlers(app)
 
-    # ------------------------------------------------------------------
     # Phase 1 routes.
-    # ------------------------------------------------------------------
     app.include_router(health.router, prefix=settings.API_V1_PREFIX)
     app.include_router(version.router, prefix=settings.API_V1_PREFIX)
 
-    # ------------------------------------------------------------------
     # Phase 2 routes.
-    # ------------------------------------------------------------------
     app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
     app.include_router(documents.router, prefix=settings.API_V1_PREFIX)
 
-    # ------------------------------------------------------------------
     # Phase 3 routes.
-    # ------------------------------------------------------------------
     app.include_router(retrieval.router, prefix=settings.API_V1_PREFIX)
 
-    # ------------------------------------------------------------------
     # Phase 4 routes.
-    # ------------------------------------------------------------------
     app.include_router(memory.router, prefix=settings.API_V1_PREFIX)
+
+    # Phase 5 routes.
+    app.include_router(orchestration.router, prefix=settings.API_V1_PREFIX)
 
     @app.get("/", tags=["system"])
     def root() -> dict:
@@ -110,7 +92,7 @@ def create_app() -> FastAPI:
             "docs": "/docs",
             "health": f"{settings.API_V1_PREFIX}/health",
         }
-
+   
     return app
 
 

@@ -31,7 +31,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from core.exceptions import UnauthorizedError
@@ -41,12 +41,13 @@ from models.user import User
 from repositories.user_repository import UserRepository
 from services.document_service import DocumentService
 from services.memory_manager import MemoryManager
+from services.orchestration_service import OrchestrationService
 from services.semantic_search_service import SemanticSearchService
 from services.user_service import UserService
 from services.working_memory_service import WorkingMemoryService
 
 DBSession = Annotated[Session, Depends(get_db)]
-bearer_scheme = HTTPBearer(auto_error=True)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 def get_user_service(db: DBSession) -> UserService:
     return UserService(db)
@@ -88,13 +89,26 @@ def get_memory_manager(db: DBSession, working_memory: WorkingMemoryServiceDep) -
 MemoryManagerDep = Annotated[MemoryManager, Depends(get_memory_manager)]
 
 
+def get_orchestration_service(db: DBSession, working_memory: WorkingMemoryServiceDep) -> OrchestrationService:
+    return OrchestrationService(db, working_memory=working_memory)
+
+
+OrchestrationServiceDep = Annotated[OrchestrationService, Depends(get_orchestration_service)]
+
+
 def get_current_user(
     db: DBSession,
     credentials: Annotated[
-        HTTPAuthorizationCredentials,
+        HTTPAuthorizationCredentials | None,
         Depends(bearer_scheme),
-    ],
+    ] = None,
 ) -> User:
+    """
+    Resolves the authenticated user from a Bearer token.
+    """
+
+    if credentials is None:
+        raise UnauthorizedError("Missing or malformed Authorization header")
 
     token = credentials.credentials
 
@@ -107,13 +121,13 @@ def get_current_user(
     try:
         user_id = uuid.UUID(subject)
     except ValueError as exc:
-        raise UnauthorizedError("Token subject is not a valid user identifier") from exc
+        raise UnauthorizedError(
+            "Token subject is not a valid user identifier"
+        ) from exc
 
     user = UserRepository(db).get(user_id)
     if user is None:
-        raise UnauthorizedError("User no longer exists")
+        raise UnauthorizedError("User for this token no longer exists")
 
     return user
-
-
 CurrentUser = Annotated[User, Depends(get_current_user)]

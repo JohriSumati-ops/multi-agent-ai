@@ -33,6 +33,7 @@ from main import app
 from retrieval.embedder import EmbeddingService
 from retrieval.vector_store import reset_memory_vector_store, reset_vector_store
 from memory.session_memory import reset_session_memory
+from orchestration.agent_registry import reset_agent_registry
 from tests.fakes import FakeEmbeddingBackend
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -74,11 +75,13 @@ def isolated_embedding_service(tmp_path, monkeypatch):
     reset_vector_store()
     reset_memory_vector_store()
     reset_session_memory()
+    reset_agent_registry()
     yield
     EmbeddingService.reset_instance()
     reset_vector_store()
     reset_memory_vector_store()
     reset_session_memory()
+    reset_agent_registry()
 
 
 @pytest.fixture()

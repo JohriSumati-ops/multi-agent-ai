@@ -30,6 +30,7 @@ from models.memory import Memory  # noqa: F401
 from models.memory_access_log import MemoryAccessLog  # noqa: F401
 from models.memory_embedding import MemoryEmbedding  # noqa: F401
 from models.message import Message  # noqa: F401
+from models.orchestration_event import OrchestrationEvent  # noqa: F401
 from models.user import User  # noqa: F401
 
 __all__ = [
@@ -43,5 +44,6 @@ __all__ = [
     "MemoryAccessLog",
     "MemoryEmbedding",
     "Message",
+    "OrchestrationEvent",
     "User",
 ]

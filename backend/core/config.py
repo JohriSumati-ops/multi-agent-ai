@@ -155,6 +155,19 @@ class Settings(BaseSettings):
         default=5_000, description="Soft cap per user before MemoryCleanupService prunes low-importance entries."
     )
 
+    # ------------------------------------------------------------------ #
+    # Phase 5: Orchestration / Intelligence Layer
+    # ------------------------------------------------------------------ #
+    ORCHESTRATION_MAX_WORKERS: int = Field(
+        default=4, description="Thread pool size WorkflowEngine uses for parallel task execution within a wave."
+    )
+    ORCHESTRATION_DEFAULT_TASK_TIMEOUT_SECONDS: float = Field(
+        default=30.0, description="Default per-task timeout when a Task doesn't specify its own."
+    )
+    ORCHESTRATION_DEFAULT_MAX_RETRIES: int = Field(
+        default=2, description="Default per-task retry count when a Task doesn't specify its own."
+    )
+
     @field_validator("SECRET_KEY")
     @classmethod
     def warn_on_default_secret(cls, value: str) -> str:
