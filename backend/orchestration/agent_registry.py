@@ -167,10 +167,12 @@ def get_agent_registry() -> AgentRegistry:
 
 def _register_default_agents(registry: AgentRegistry) -> None:
     """
-    Registers this project's three existing agents (Phase 2/3) under
-    stable capability names, so the orchestration layer has real,
-    functioning agents to plan against from the moment it's imported —
-    without needing a separate bootstrap step that could be forgotten.
+    Registers this project's agents under stable capability names, so the
+    orchestration layer has real, functioning agents to plan against from
+    the moment it's imported — without needing a separate bootstrap step
+    that could be forgotten. Phase 2/3 agents were registered here first;
+    Phase 6 adds its five reasoning-layer agents using the exact same
+    pattern (see docs/Phase6.md Section 19).
     """
     from agents.embedding_agent import EmbeddingAgent
     from agents.metadata_extraction_agent import MetadataExtractionAgent
@@ -191,6 +193,39 @@ def _register_default_agents(registry: AgentRegistry) -> None:
         "generate_embeddings",
         EmbeddingAgent,
         description="Generates vector embeddings for a batch of text chunks.",
+    )
+
+    # --- Phase 6: LLM reasoning agents ---
+    from agents.citation_agent import CitationAgent
+    from agents.question_answering_agent import QuestionAnsweringAgent
+    from agents.reasoning_agent import ReasoningAgent
+    from agents.research_agent import ResearchAgent
+    from agents.summarization_agent import SummarizationAgent
+
+    registry.register(
+        "research_query",
+        ResearchAgent,
+        description="Full research pipeline: assembles context, calls the LLM, validates, cites.",
+    )
+    registry.register(
+        "answer_question",
+        QuestionAnsweringAgent,
+        description="Answers a specific question against a (typically single-document) context scope.",
+    )
+    registry.register(
+        "summarize_context",
+        SummarizationAgent,
+        description="Summarizes retrieved/remembered context without answering a specific question.",
+    )
+    registry.register(
+        "inject_citations",
+        CitationAgent,
+        description="Resolves chunk_ids to real citation text; optionally checks grounding. No LLM call.",
+    )
+    registry.register(
+        "analyze_evidence",
+        ReasoningAgent,
+        description="Evidence conflict/consensus analysis over assembled context. No LLM call.",
     )
 
 

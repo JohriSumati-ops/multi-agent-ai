@@ -168,6 +168,29 @@ class Settings(BaseSettings):
         default=2, description="Default per-task retry count when a Task doesn't specify its own."
     )
 
+    # ------------------------------------------------------------------ #
+    # Phase 6: LLM Intelligence & Research Reasoning Layer
+    # ------------------------------------------------------------------ #
+    ANTHROPIC_API_KEY: str = Field(
+        default="",
+        description=(
+            "Anthropic API key for ClaudeProvider. Empty string means the SDK falls back to "
+            "the ANTHROPIC_API_KEY environment variable itself. Never hardcode a real key here."
+        ),
+    )
+    LLM_MODEL_NAME: str = Field(default="claude-sonnet-4-5", description="Default Claude model for ClaudeProvider.")
+    LLM_MAX_TOKENS: int = Field(default=1024, description="Default max_tokens per LLM call.")
+    LLM_TEMPERATURE: float = Field(default=0.3, ge=0.0, le=1.0, description="Default sampling temperature.")
+    LLM_TIMEOUT_SECONDS: float = Field(default=60.0, description="Per-call timeout enforced by LLMService.")
+    LLM_MAX_RETRIES: int = Field(default=2, description="LLMService retry count for transient provider failures.")
+    LLM_CONTEXT_TOKEN_BUDGET: int = Field(
+        default=4000,
+        description="Max approximate tokens of retrieved/remembered context assembled into one prompt.",
+    )
+    LLM_MIN_CONFIDENCE: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="ResponseValidator rejects answers below this confidence."
+    )
+
     @field_validator("SECRET_KEY")
     @classmethod
     def warn_on_default_secret(cls, value: str) -> str:

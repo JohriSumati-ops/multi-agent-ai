@@ -256,4 +256,3 @@ class EmbeddingService:
 
     def clear_cache(self) -> None:
         self._cache.clear()
-    

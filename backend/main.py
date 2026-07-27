@@ -33,7 +33,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import models  # noqa: F401 — see models/__init__.py: importing this registers all ORM mappers
-from api.routes import auth, documents, health, memory, orchestration, retrieval, version
+from api.routes import auth, documents, health, memory, orchestration, research, retrieval, version
 from core.config import settings
 from core.logging import configure_logging, get_logger
 from middleware.error_handler import register_exception_handlers
@@ -85,6 +85,9 @@ def create_app() -> FastAPI:
     # Phase 5 routes.
     app.include_router(orchestration.router, prefix=settings.API_V1_PREFIX)
 
+    # Phase 6 routes.
+    app.include_router(research.router, prefix=settings.API_V1_PREFIX)
+
     @app.get("/", tags=["system"])
     def root() -> dict:
         return {
@@ -92,7 +95,7 @@ def create_app() -> FastAPI:
             "docs": "/docs",
             "health": f"{settings.API_V1_PREFIX}/health",
         }
-   
+
     return app
 
 

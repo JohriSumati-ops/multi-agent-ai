@@ -38,3 +38,6 @@ reportlab>=4.0
 sentence-transformers>=3.0    # local embedding inference (pulls in torch)
 faiss-cpu>=1.8                # vector index (exact search, IndexFlatIP + IndexIDMap)
 numpy>=1.26
+
+# --- Phase 6: LLM reasoning layer ---
+anthropic>=0.30                # official SDK for ClaudeProvider (llm/providers/claude_provider.py)

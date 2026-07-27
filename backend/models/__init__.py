@@ -26,11 +26,13 @@ from models.document import Document  # noqa: F401
 from models.document_chunk import DocumentChunk  # noqa: F401
 from models.embedding import Embedding  # noqa: F401
 from models.learning_profile import LearningProfile  # noqa: F401
+from models.llm_usage_log import LLMUsageLog  # noqa: F401
 from models.memory import Memory  # noqa: F401
 from models.memory_access_log import MemoryAccessLog  # noqa: F401
 from models.memory_embedding import MemoryEmbedding  # noqa: F401
 from models.message import Message  # noqa: F401
 from models.orchestration_event import OrchestrationEvent  # noqa: F401
+from models.research_response import ResearchResponse  # noqa: F401
 from models.user import User  # noqa: F401
 
 __all__ = [
@@ -40,10 +42,12 @@ __all__ = [
     "DocumentChunk",
     "Embedding",
     "LearningProfile",
+    "LLMUsageLog",
     "Memory",
     "MemoryAccessLog",
     "MemoryEmbedding",
     "Message",
     "OrchestrationEvent",
+    "ResearchResponse",
     "User",
 ]

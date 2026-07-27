@@ -51,3 +51,69 @@ class FakeEmbeddingBackend:
             vector /= np.linalg.norm(vector)  # L2-normalize, matching the real backend's behavior
             vectors[i] = vector
         return vectors
+
+
+class FakeLLMBackend:
+    """
+    Deterministic, dependency-free stand-in for `llm.providers.claude_provider.ClaudeProvider`
+    — see docs/Phase6.md Section 18 for why the real provider can't be
+    exercised in this build/test environment (no configured API
+    credential), mirroring `FakeEmbeddingBackend`'s identical rationale
+    for the embedding model in Phase 3.
+
+    Returns a canned, valid `StructuredAnswer`-shaped JSON string by
+    default, so every component built on top of `BaseLLM` (PromptBuilder,
+    LLMService, ResponseValidator, SourceGrounding, CitationInjector,
+    the five Phase 6 agents) can be tested end-to-end without a real
+    model call. `queued_responses` lets a test override this for
+    failure/retry/malformed-output scenarios.
+    """
+
+    provider_name = "fake"
+
+    def __init__(self, model_name: str = "fake-model") -> None:
+        self.model_name = model_name
+        self.call_count = 0
+        self.last_messages: list = []
+        self.queued_responses: list = []  # list[LLMResponse | Exception], consumed in order
+        self.queued_exception: Exception | None = None
+
+    def _next_response(self, messages: list) -> "LLMResponse":
+        from llm.base_llm import LLMResponse
+
+        self.call_count += 1
+        self.last_messages = messages
+
+        if self.queued_responses:
+            next_item = self.queued_responses.pop(0)
+            if isinstance(next_item, Exception):
+                raise next_item
+            return next_item
+
+        if self.queued_exception is not None:
+            exc, self.queued_exception = self.queued_exception, None
+            raise exc
+
+        default_json = (
+            '{"answer": "This is a fake answer grounded in the provided context.", '
+            '"sources_used": [], "confidence": 0.8, '
+            '"reasoning_summary": "Fake reasoning summary.", "memory_references": []}'
+        )
+        return LLMResponse(
+            content=default_json,
+            model_name=self.model_name,
+            input_tokens=50,
+            output_tokens=20,
+            finish_reason="end_turn",
+        )
+
+    def generate(self, messages: list, *, temperature: float = 0.7, max_tokens: int = 1024, **kwargs) -> "LLMResponse":
+        return self._next_response(messages)
+
+    async def agenerate(
+        self, messages: list, *, temperature: float = 0.7, max_tokens: int = 1024, **kwargs
+    ) -> "LLMResponse":
+        return self._next_response(messages)
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        raise NotImplementedError("FakeLLMBackend does not implement embeddings.")

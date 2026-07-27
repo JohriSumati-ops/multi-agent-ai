@@ -189,3 +189,33 @@ class InvalidMemoryScopeError(AppException):
 
     status_code = 422
     error_code = "invalid_memory_scope"
+
+
+# --------------------------------------------------------------------- #
+# Phase 6 — LLM reasoning / research layer errors.
+# --------------------------------------------------------------------- #
+class LLMResponseError(AppException):
+    """Raised when the model's response fails structural/schema validation."""
+
+    status_code = 502
+    error_code = "llm_response_error"
+
+
+class InsufficientContextError(AppException):
+    """
+    Raised (or, in ResearchReasoningService, returned as an explicit
+    result rather than an exception — see its docstring) when no relevant
+    context exists to answer a query — the deliberate "don't call the LLM
+    with nothing to ground it" hallucination mitigation from
+    docs/Phase6.md Section 5.
+    """
+
+    status_code = 422
+    error_code = "insufficient_context"
+
+
+class GroundingViolationError(AppException):
+    """Raised when a model response cites a source that was never part of its provided context."""
+
+    status_code = 502
+    error_code = "grounding_violation"

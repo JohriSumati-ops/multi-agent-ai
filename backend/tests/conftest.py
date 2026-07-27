@@ -34,7 +34,8 @@ from retrieval.embedder import EmbeddingService
 from retrieval.vector_store import reset_memory_vector_store, reset_vector_store
 from memory.session_memory import reset_session_memory
 from orchestration.agent_registry import reset_agent_registry
-from tests.fakes import FakeEmbeddingBackend
+from llm.prompts.registry import reset_prompt_registry
+from tests.fakes import FakeEmbeddingBackend, FakeLLMBackend
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
@@ -76,12 +77,19 @@ def isolated_embedding_service(tmp_path, monkeypatch):
     reset_memory_vector_store()
     reset_session_memory()
     reset_agent_registry()
+    reset_prompt_registry()
+
+    import reasoning.factory
+
+    monkeypatch.setattr(reasoning.factory, "get_llm_provider", lambda *args, **kwargs: FakeLLMBackend())
+
     yield
     EmbeddingService.reset_instance()
     reset_vector_store()
     reset_memory_vector_store()
     reset_session_memory()
     reset_agent_registry()
+    reset_prompt_registry()
 
 
 @pytest.fixture()

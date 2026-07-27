@@ -132,7 +132,12 @@ def test_clear_removes_all_registrations() -> None:
 
 def test_default_registry_includes_the_three_existing_agents() -> None:
     registry = get_agent_registry()
-    assert set(registry.capabilities()) == {"parse_document", "extract_metadata", "generate_embeddings"}
+    # Updated in Phase 6: the default registry now also includes the five
+    # reasoning-layer agents registered in orchestration/agent_registry.py's
+    # _register_default_agents — this is the intended extension the
+    # registry was built for (see docs/Phase6.md Section 19), not a
+    # regression of Phase 5's original three.
+    assert {"parse_document", "extract_metadata", "generate_embeddings"} <= set(registry.capabilities())
 
 
 def test_default_registry_declares_extract_metadata_depends_on_parse_document() -> None:

@@ -13,7 +13,10 @@ def test_list_capabilities(client, auth_headers) -> None:
     response = client.get("/api/v1/orchestration/capabilities", headers=auth_headers)
     assert response.status_code == 200
     capabilities = {c["capability"] for c in response.json()["data"]}
-    assert capabilities == {"parse_document", "extract_metadata", "generate_embeddings"}
+    # Updated in Phase 6: five reasoning-layer capabilities were added
+    # alongside Phase 2/3's original three — see docs/Phase6.md Section 19.
+    assert {"parse_document", "extract_metadata", "generate_embeddings"} <= capabilities
+    assert {"research_query", "answer_question", "summarize_context", "inject_citations", "analyze_evidence"} <= capabilities
 
 
 def test_health_check_endpoint(client, auth_headers) -> None:
