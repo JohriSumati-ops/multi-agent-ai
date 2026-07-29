@@ -7,6 +7,11 @@ import {
   OrchestrationHealthCard,
   SystemHealthStrip,
 } from "@/features/dashboard/components/dashboard-widgets";
+import { MemoryCompositionChart } from "@/features/dashboard/components/memory-composition-chart";
+import { DocumentStatusChart } from "@/features/dashboard/components/document-status-chart";
+import { AgentHealthChart } from "@/features/dashboard/components/agent-health-chart";
+import { ActivityFeed } from "@/features/dashboard/components/activity-feed";
+import { PerformanceMetricsCard } from "@/features/dashboard/components/performance-metrics-card";
 
 export const metadata: Metadata = { title: "Dashboard — Research Assistant Console" };
 
@@ -24,8 +29,19 @@ export default function DashboardPage() {
       <QuickActions />
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <DocumentStatusChart />
+        <MemoryCompositionChart />
+        <AgentHealthChart />
+        <PerformanceMetricsCard />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <RecentDocumentsCard />
         <MemorySummaryCard />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ActivityFeed />
         <OrchestrationHealthCard />
       </div>
     </div>
