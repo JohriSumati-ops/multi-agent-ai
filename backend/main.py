@@ -26,7 +26,7 @@ the API surface grows.
 """
 
 from __future__ import annotations
-
+from database.init_db import init_db
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -45,8 +45,19 @@ logger = get_logger("app")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting %s (env=%s, debug=%s)", settings.APP_NAME, settings.ENVIRONMENT, settings.DEBUG)
+    logger.info(
+        "Starting %s (env=%s, debug=%s)",
+        settings.APP_NAME,
+        settings.ENVIRONMENT,
+        settings.DEBUG,
+    )
+
+    # Create all database tables
+    init_db()
+    logger.info("Database initialized successfully.")
+
     yield
+
     logger.info("Shutting down %s", settings.APP_NAME)
 
 

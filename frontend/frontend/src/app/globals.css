@@ -1,0 +1,219 @@
+@import "tailwindcss";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — derived exclusively from the "Fiery Ocean" palette: */
+/*   #780000 deep red   (critical / destructive)                       */
+/*   #C1121F vivid red  (primary brand / action)                       */
+/*   #FDF0D5 cream      (light surface / dark-mode foreground)         */
+/*   #003049 navy       (dark surface / light-mode foreground)         */
+/*   #669BBC steel blue (secondary accent / info / links)              */
+/* All tints/shades below are color-mix() derivations of these five    */
+/* values only — no additional hues are introduced.                    */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Light theme: cream surfaces, navy ink */
+  --background: #faf6ec;
+  --foreground: #00212f;
+
+  --surface: #fffdf8;
+  --surface-elevated: #ffffff;
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--foreground);
+
+  --primary: #c1121f;
+  --primary-foreground: #fdf0d5;
+  --primary-hover: #a30f1a;
+
+  --secondary: color-mix(in oklab, #669bbc 16%, white);
+  --secondary-foreground: #00344a;
+
+  --accent: #669bbc;
+  --accent-foreground: #00212f;
+
+  --muted: color-mix(in oklab, #003049 6%, #fdf0d5 94%);
+  --muted-foreground: color-mix(in oklab, #003049 62%, transparent);
+
+  --destructive: #780000;
+  --destructive-foreground: #fdf0d5;
+
+  --success: #2f6f4e;
+  --success-foreground: #fdf0d5;
+  --warning: #a1620a;
+  --warning-foreground: #fdf0d5;
+  --info: #336f92;
+  --info-foreground: #fdf0d5;
+
+  --border: color-mix(in oklab, #003049 12%, transparent);
+  --input: color-mix(in oklab, #003049 16%, transparent);
+  --ring: color-mix(in oklab, #c1121f 45%, transparent);
+
+  --sidebar: #00212f;
+  --sidebar-foreground: #eef4f8;
+  --sidebar-muted: color-mix(in oklab, #eef4f8 55%, #00212f 45%);
+  --sidebar-border: color-mix(in oklab, #fdf0d5 12%, transparent);
+  --sidebar-accent: color-mix(in oklab, #669bbc 28%, #00212f 72%);
+  --sidebar-primary: #c1121f;
+
+  --chart-1: #c1121f;
+  --chart-2: #669bbc;
+  --chart-3: #780000;
+  --chart-4: #a3c4d9;
+  --chart-5: #e6a4ac;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+.dark {
+  /* Dark theme: navy surfaces, cream ink — the primary/default theme,
+     matching the console references (LangSmith / Vertex / Anthropic
+     Console are all dark-first). */
+  --background: #001b27;
+  --foreground: #f2ead9;
+
+  --surface: #00283a;
+  --surface-elevated: #062f42;
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--foreground);
+
+  --primary: #e01a28;
+  --primary-foreground: #fdf0d5;
+  --primary-hover: #f23c49;
+
+  --secondary: color-mix(in oklab, #669bbc 22%, #00283a 78%);
+  --secondary-foreground: #dcebf3;
+
+  --accent: #669bbc;
+  --accent-foreground: #00161f;
+
+  --muted: color-mix(in oklab, #fdf0d5 8%, #00283a 92%);
+  --muted-foreground: color-mix(in oklab, #fdf0d5 55%, transparent);
+
+  --destructive: #ff5a4e;
+  --destructive-foreground: #2a0000;
+
+  --success: #5fb98a;
+  --success-foreground: #00190f;
+  --warning: #e0a343;
+  --warning-foreground: #2a1a00;
+  --info: #7fb5d6;
+  --info-foreground: #001824;
+
+  --border: color-mix(in oklab, #fdf0d5 14%, transparent);
+  --input: color-mix(in oklab, #fdf0d5 18%, transparent);
+  --ring: color-mix(in oklab, #e01a28 55%, transparent);
+
+  --sidebar: #001521;
+  --sidebar-foreground: #eef4f8;
+  --sidebar-muted: color-mix(in oklab, #eef4f8 45%, #001521 55%);
+  --sidebar-border: color-mix(in oklab, #fdf0d5 10%, transparent);
+  --sidebar-accent: color-mix(in oklab, #669bbc 30%, #001521 70%);
+  --sidebar-primary: #e01a28;
+
+  --chart-1: #e01a28;
+  --chart-2: #669bbc;
+  --chart-3: #ff8a80;
+  --chart-4: #3d6d8a;
+  --chart-5: #f2ead9;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary: var(--sidebar-primary);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .font-mono,
+  code,
+  kbd {
+    font-variant-ligatures: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
