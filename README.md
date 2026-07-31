@@ -157,6 +157,20 @@ Unlike traditional chatbot implementations, this project separates every respons
                               ▼
                         Final Response
 ```
+---
+
+## Frontend workflow
+### Landing Page
+<img width="1902" height="912" alt="Multi Agent AI landing page" src="https://github.com/user-attachments/assets/ce779678-52fc-43fe-87b2-b9a1f2bc189a" />
+
+### Dahsboard
+<img width="1892" height="902" alt="dashboard" src="https://github.com/user-attachments/assets/396ea47b-39f1-4499-a532-819616c5f314" />
+
+### Candidate Analysis
+<img width="1877" height="902" alt="candidate_analysis" src="https://github.com/user-attachments/assets/d7fa8b23-8afb-4e1e-a82b-26228791621c" />
+
+### Semantic Retrieval
+<img width="1907" height="797" alt="semantic_retrieval" src="https://github.com/user-attachments/assets/daa2aeb1-1ee1-481b-937a-0aef309c9d1e" />
 
 ---
 
