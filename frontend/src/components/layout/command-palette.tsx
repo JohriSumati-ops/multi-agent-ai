@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { FileText, LogOut, Moon, Sun } from "lucide-react";
+import { toast } from "sonner";
+import { FileText, LogOut, Moon, Sun, MessageSquarePlus, UploadCloud, BrainCircuit, Workflow, Keyboard } from "lucide-react";
 
 import {
   CommandDialog,
@@ -18,6 +19,7 @@ import { useDocuments } from "@/features/documents/hooks/use-documents";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-provider";
 import { useCommandPalette } from "@/context/command-palette-context";
+import { createSession } from "@/features/workspace/session-store";
 import { NAV_ITEMS } from "@/config/nav";
 
 export function CommandPalette() {
@@ -40,6 +42,32 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>No matches.</CommandEmpty>
 
+        <CommandGroup heading="Quick actions">
+          <CommandItem
+            value="new research session start research"
+            onSelect={() => {
+              createSession();
+              go("/research");
+            }}
+          >
+            <MessageSquarePlus />
+            Start a new research session
+          </CommandItem>
+          <CommandItem value="upload document" onSelect={() => go("/documents#document-uploader")}>
+            <UploadCloud />
+            Upload a document
+          </CommandItem>
+          <CommandItem value="search memory" onSelect={() => go("/memory")}>
+            <BrainCircuit />
+            Search memory
+          </CommandItem>
+          <CommandItem value="execute agent goal orchestration" onSelect={() => go("/orchestration")}>
+            <Workflow />
+            Execute an agent goal
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
         <CommandGroup heading="Modules">
           {NAV_ITEMS.map((item) => (
             <CommandItem key={item.href} value={item.label} onSelect={() => go(item.href)}>
@@ -72,6 +100,18 @@ export function CommandPalette() {
           <CommandItem value="toggle theme" onSelect={() => { toggleTheme(); setOpen(false); }}>
             {theme === "dark" ? <Sun /> : <Moon />}
             Switch to {theme === "dark" ? "light" : "dark"} mode
+          </CommandItem>
+          <CommandItem
+            value="keyboard shortcuts help"
+            onSelect={() => {
+              setOpen(false);
+              toast.message("Keyboard shortcuts", {
+                description: "⌘/Ctrl + K — command palette · ⌘/Ctrl + Enter — send in Research Workspace",
+              });
+            }}
+          >
+            <Keyboard />
+            Keyboard shortcuts
           </CommandItem>
           <CommandItem value="sign out" onSelect={() => { setOpen(false); logout(); }}>
             <LogOut />

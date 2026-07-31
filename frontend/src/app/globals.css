@@ -217,3 +217,131 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Rendered markdown (research answers). Deliberately not using highlight.js's
+   bundled themes — mapped onto the app's own design tokens instead so code
+   blocks look native in both light and dark mode. */
+.md-content {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--foreground);
+}
+.md-content > :first-child {
+  margin-top: 0;
+}
+.md-content p {
+  margin: 0.65em 0;
+}
+.md-content ul,
+.md-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.4em;
+}
+.md-content li {
+  margin: 0.2em 0;
+}
+.md-content ul {
+  list-style: disc;
+}
+.md-content ol {
+  list-style: decimal;
+}
+.md-content h1,
+.md-content h2,
+.md-content h3,
+.md-content h4 {
+  font-weight: 600;
+  margin: 0.9em 0 0.4em;
+  color: var(--foreground);
+}
+.md-content h1 {
+  font-size: 1.15em;
+}
+.md-content h2 {
+  font-size: 1.08em;
+}
+.md-content h3 {
+  font-size: 1em;
+}
+.md-content blockquote {
+  border-left: 2px solid var(--border);
+  margin: 0.6em 0;
+  padding: 0.1em 0 0.1em 0.9em;
+  color: var(--muted-foreground);
+}
+.md-content a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  font-size: 0.8em;
+}
+.md-content th,
+.md-content td {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.md-content th {
+  background: var(--muted);
+  font-weight: 600;
+}
+.md-content :not(pre) > code {
+  background: var(--muted);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+}
+.md-content pre {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  margin: 0.65em 0;
+  overflow-x: auto;
+}
+.md-content pre code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  line-height: 1.55;
+  background: transparent;
+  padding: 0;
+}
+.md-content .hljs-keyword,
+.md-content .hljs-selector-tag,
+.md-content .hljs-literal {
+  color: var(--color-chart-1);
+}
+.md-content .hljs-string,
+.md-content .hljs-attr {
+  color: var(--color-chart-2);
+}
+.md-content .hljs-number,
+.md-content .hljs-built_in {
+  color: var(--color-chart-4);
+}
+.md-content .hljs-comment {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+.md-content .hljs-title,
+.md-content .hljs-function {
+  color: var(--color-chart-3);
+}
+
+/* Export Center print view — everything else in the app is hidden via
+   `.no-print`, applied by the print route itself. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: black;
+  }
+}

@@ -3,6 +3,7 @@
 import { Sun, Moon, LogOut, User, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,7 +17,7 @@ import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-provider";
 import { useCommandPalette } from "@/context/command-palette-context";
 
-export function Topbar() {
+export function Topbar({ className }: { className?: string }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { setOpen: openPalette } = useCommandPalette();
@@ -25,7 +26,12 @@ export function Topbar() {
   const isMac = typeof navigator !== "undefined" && /Mac/.test(navigator.platform);
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-6">
+    <header
+      className={cn(
+        "flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-6",
+        className
+      )}
+    >
       <div className="flex items-center gap-2">
         <MobileNav />
         <button

@@ -53,7 +53,14 @@ export function useLocalHistory<T>(storageKey: string, limit = 20, itemKey: (ite
     [items, itemKey, persist]
   );
 
+  const update = React.useCallback(
+    (key: string, patch: Partial<T>) => {
+      persist(items.map((existing) => (itemKey(existing) === key ? { ...existing, ...patch } : existing)));
+    },
+    [items, itemKey, persist]
+  );
+
   const clear = React.useCallback(() => persist([]), [persist]);
 
-  return { items, hydrated, add, remove, clear };
+  return { items, hydrated, add, remove, update, clear };
 }

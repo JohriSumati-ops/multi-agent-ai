@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CapabilitiesList } from "@/features/orchestration/components/capabilities-list";
 import { GoalExecutionForm } from "@/features/orchestration/components/goal-execution-form";
 import { ExecutionTrace } from "@/features/orchestration/components/execution-trace";
+import { OrchestrationWorkflowDiagram } from "@/features/orchestration/components/orchestration-workflow-diagram";
 import type { ExecuteGoalResponse } from "@/types/orchestration";
 
 export default function OrchestrationPage() {
@@ -27,7 +28,12 @@ export default function OrchestrationPage() {
         </TabsList>
         <TabsContent value="execute" className="space-y-6">
           <GoalExecutionForm onResult={setResult} />
-          {result && <ExecutionTrace result={result} />}
+          {result && (
+            <>
+              <OrchestrationWorkflowDiagram result={result} />
+              <ExecutionTrace result={result} />
+            </>
+          )}
         </TabsContent>
         <TabsContent value="agents">
           <CapabilitiesList />

@@ -63,4 +63,22 @@ describe("useLocalHistory", () => {
 
     expect(result.current.items).toEqual([]);
   });
+
+  it("update patches a single item by key without touching the rest", async () => {
+    interface PinnableEntry {
+      query: string;
+      pinned?: boolean;
+    }
+    const { result } = renderHook(() =>
+      useLocalHistory<PinnableEntry>("test_history_pin", 5, (e) => e.query)
+    );
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+
+    act(() => result.current.add({ query: "a" }));
+    act(() => result.current.add({ query: "b" }));
+    act(() => result.current.update("a", { pinned: true }));
+
+    expect(result.current.items.find((i) => i.query === "a")?.pinned).toBe(true);
+    expect(result.current.items.find((i) => i.query === "b")?.pinned).toBeUndefined();
+  });
 });

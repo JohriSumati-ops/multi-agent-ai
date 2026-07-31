@@ -6,33 +6,53 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { researchApi } from "@/lib/api/research-api";
 import { queryKeys } from "@/lib/api/query-keys";
 import { ApiError } from "@/types/api";
-import type { ResearchQueryRequest } from "@/types/research";
+import type { ResearchAnswerOut, ResearchQueryRequest } from "@/types/research";
 import { isNotifyEnabled } from "@/lib/preferences";
 import { logActivity } from "@/features/analytics/activity-log";
 
-export function useResearchQuery() {
+export type ResearchMode = "query" | "answer" | "summarize";
+
+const MODE_FN: Record<ResearchMode, (payload: ResearchQueryRequest) => Promise<ResearchAnswerOut>> = {
+  query: researchApi.query,
+  answer: researchApi.answer,
+  summarize: researchApi.summarize,
+};
+
+const MODE_LABEL: Record<ResearchMode, string> = {
+  query: "Research query",
+  answer: "Direct answer",
+  summarize: "Summary",
+};
+
+function useResearchMutation(mode: ResearchMode) {
   return useMutation({
-    mutationFn: (payload: ResearchQueryRequest) => researchApi.query(payload),
+    mutationFn: (payload: ResearchQueryRequest) => MODE_FN[mode](payload),
     onSuccess: (result) => {
       // The research endpoint reports its own latency_ms — use the real
       // server-measured figure rather than a client-side stopwatch.
       logActivity({
         type: "research",
-        label: `Query answered${result.used_llm ? "" : " (retrieval-only, no LLM)"}`,
+        label: `${MODE_LABEL[mode]} answered${result.used_llm ? "" : " (retrieval-only, no LLM)"}`,
         success: true,
         latencyMs: result.latency_ms,
         latencySource: "server",
       });
       if (isNotifyEnabled("research")) {
-        toast.success("Research answer ready", {
+        toast.success(`${MODE_LABEL[mode]} ready`, {
           description: result.is_grounded === false ? "Answer may not be fully grounded in sources." : undefined,
         });
       }
     },
     onError: (err) => {
-      logActivity({ type: "research", label: "Query failed", success: false, latencyMs: null, latencySource: null });
+      logActivity({
+        type: "research",
+        label: `${MODE_LABEL[mode]} failed`,
+        success: false,
+        latencyMs: null,
+        latencySource: null,
+      });
       if (isNotifyEnabled("research")) {
-        toast.error("Research query failed", {
+        toast.error(`${MODE_LABEL[mode]} failed`, {
           description: err instanceof ApiError ? err.message : "Try again in a moment.",
         });
       }
@@ -40,10 +60,16 @@ export function useResearchQuery() {
   });
 }
 
+export function useResearchQuery() {
+  return useResearchMutation("query");
+}
+
+export function useResearchAnswer() {
+  return useResearchMutation("answer");
+}
+
 export function useResearchSummarize() {
-  return useMutation({
-    mutationFn: (payload: ResearchQueryRequest) => researchApi.summarize(payload),
-  });
+  return useResearchMutation("summarize");
 }
 
 export function useResearchReason() {

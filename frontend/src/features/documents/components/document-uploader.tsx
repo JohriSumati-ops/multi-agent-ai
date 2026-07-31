@@ -31,7 +31,7 @@ export function DocumentUploader() {
   }
 
   return (
-    <div>
+    <div id="document-uploader">
       <div
         onDragOver={(e) => {
           e.preventDefault();

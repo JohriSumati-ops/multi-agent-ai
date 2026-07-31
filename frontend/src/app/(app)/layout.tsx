@@ -9,10 +9,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <ProtectedRoute>
       <CommandPaletteProvider>
         <div className="flex min-h-svh bg-background">
-          <Sidebar />
+          <Sidebar className="no-print" />
           <div className="flex min-w-0 flex-1 flex-col">
-            <Topbar />
-            <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+            <Topbar className="no-print" />
+            <main className="flex-1 overflow-y-auto p-4 lg:p-6 print:overflow-visible print:p-0">{children}</main>
           </div>
         </div>
         <CommandPalette />

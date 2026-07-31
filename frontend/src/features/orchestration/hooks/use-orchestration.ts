@@ -9,6 +9,7 @@ import { ApiError } from "@/types/api";
 import type { ExecuteGoalRequest } from "@/types/orchestration";
 import { isNotifyEnabled } from "@/lib/preferences";
 import { logActivity } from "@/features/analytics/activity-log";
+import { ingestExecutionTimeline } from "@/features/orchestration/agent-stats";
 
 export function useCapabilities() {
   return useQuery({
@@ -31,7 +32,8 @@ export function useExecuteGoal() {
       const startedAt = performance.now();
       try {
         const result = await orchestrationApi.execute(payload);
-        const { plan } = result;
+        const { plan, trace } = result;
+        ingestExecutionTimeline(trace.timeline);
         logActivity({
           type: "orchestration",
           label: `${payload.goal} (${plan.succeeded}/${plan.task_count} tasks succeeded)`,

@@ -1,25 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Search, Loader2, FileText } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { useSemanticSearch } from "@/features/retrieval/hooks/use-retrieval";
 import { usePreferences } from "@/context/preferences-context";
 import { useLocalHistory } from "@/hooks/use-local-history";
+import { SourceExplorerResults } from "@/features/retrieval/components/source-explorer-results";
+import { SearchHistoryPanel, type SearchHistoryEntry } from "@/features/retrieval/components/search-history-panel";
 import { ApiError } from "@/types/api";
-import type { RankedResultOut } from "@/types/retrieval";
-
-interface SearchHistoryEntry {
-  query: string;
-  topK: number;
-  threshold: number;
-}
 
 export function RetrievalSearch() {
   const { preferences } = usePreferences();
@@ -116,28 +109,7 @@ export function RetrievalSearch() {
         </div>
       </form>
 
-      {history.hydrated && history.items.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] text-muted-foreground">Recent:</span>
-          {history.items.map((entry) => (
-            <button
-              key={entry.query}
-              type="button"
-              onClick={() => onSelectHistory(entry)}
-              className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-muted"
-            >
-              {entry.query}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={history.clear}
-            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-          >
-            Clear
-          </button>
-        </div>
-      )}
+      <SearchHistoryPanel history={history} onSelect={onSelectHistory} />
 
       {error && (
         <ErrorBanner
@@ -151,50 +123,9 @@ export function RetrievalSearch() {
             {data.result_count} result{data.result_count === 1 ? "" : "s"} for{" "}
             <span className="font-medium text-foreground">&ldquo;{data.query}&rdquo;</span>
           </p>
-          {data.results.map((r) => (
-            <ResultCard key={r.chunk_id} result={r} />
-          ))}
-          {data.results.length === 0 && (
-            <p className="rounded-lg border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-              No chunks passed the similarity threshold. Try lowering it.
-            </p>
-          )}
+          <SourceExplorerResults data={data} />
         </div>
       )}
     </div>
-  );
-}
-
-function ResultCard({ result }: { result: RankedResultOut }) {
-  const pct = Math.round(Math.max(0, Math.min(1, result.similarity_score)) * 100);
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="mb-2 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="secondary">#{result.rank}</Badge>
-            <FileText className="h-3.5 w-3.5" />
-            <span className="font-medium text-foreground">{result.document_title}</span>
-            {result.page_number !== null && <span>· page {result.page_number}</span>}
-          </div>
-          <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
-            {result.similarity_score.toFixed(3)}
-          </span>
-        </div>
-
-        <p className="text-sm leading-relaxed text-foreground">{result.chunk_text}</p>
-
-        <div className="mt-3 space-y-1.5">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-accent"
-              style={{ width: `${pct}%` }}
-              aria-hidden="true"
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground">{result.reason}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
