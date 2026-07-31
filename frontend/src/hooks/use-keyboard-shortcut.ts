@@ -34,7 +34,9 @@ export function useKeyboardShortcut(key: string, callback: () => void, options: 
         target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
 
       if (isEditable && !meta) return;
-      if (event.key.toLowerCase() !== key.toLowerCase()) return;
+      if (!event.key || event.key.toLowerCase() !== key.toLowerCase()) {
+  return;
+}
       if (meta && !(event.metaKey || event.ctrlKey)) return;
       if (!meta && (event.metaKey || event.ctrlKey)) return;
 
